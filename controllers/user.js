@@ -33,8 +33,7 @@ const register = async (req, res) => {
     // let connected = await dbConfig.reconnect();
     // console.log(connected);
 
-    const { email, password } = req.body;
-    let deviceId = 1200;
+    const { email, password, deviceId } = req.body;
     const saved = await userModel.create({
       email,
       password,

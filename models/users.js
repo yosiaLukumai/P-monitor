@@ -13,6 +13,7 @@ const users = mongoose.Schema({
     },
     deviceId: {
         type:String,
+        unique: true
     },
 }, {
     timestamps: true
