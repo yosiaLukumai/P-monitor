@@ -7,11 +7,14 @@ const serveData = async (req, res) => {
         let { temp, hum, size, deviceId } = req.body;
         // query the device id to get userId
         // check the type of the size of the plant
+        temp = String(temp);
+        hum = String(size);
+        size = String(size);
 
         const found = await userModel.findOne({ deviceId: String(deviceId) });
         if (found) {
             // save the data to the database
-            const saved = await dataModel.create({ userId: found?._id, temp: temp?.slice(0, String(temp?.indexOf('.')+3)), hum: String(hum?.slice(0, hum?.indexOf('.')+3)) , size: String(size?.slice(0, size?.indexOf('.')+3)) });
+            const saved = await dataModel.create({ userId: found?._id, temp: temp?.slice(0, temp?.indexOf('.')+3), hum: hum?.slice(0, hum?.indexOf('.')+3) , size: size?.slice(0, size?.indexOf('.')+3) });
             if (saved) {
                 // fire a socket to notify there is new data...
                 io.Socket.emit("newData", saved)
