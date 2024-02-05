@@ -18,8 +18,7 @@ const serveData = async (req, res) => {
         const found = await userModel.findOne({ deviceId: 1000 });
         if (found) {
             // save the data to the database
-            // const saved = await dataModel.create({ userId: found?._id, temp, hum, size });
-            const saved = await dataModel.create({ userId: found?._id, temp: temp?.slice(0, temp?.indexOf('.')+3), hum: hum?.slice(0, hum?.indexOf('.')+3) , size: size?.slice(0, size?.indexOf('.')+3) });
+            const saved = await dataModel.create({ userId: found?._id, temp, hum, size });
             if (saved) {
                 // fire a socket to notify there is new data...
                 io.Socket.emit("newData", saved)
