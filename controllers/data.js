@@ -9,7 +9,7 @@ const serveData = async (req, res) => {
         // query the device id to get userId
         // check the type of the size of the plant
         temp = String(temp);
-        hum = String(size);
+        hum = String(hum);
         size = String(size);
 
         
