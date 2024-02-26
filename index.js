@@ -52,9 +52,9 @@ app.post("/data/upload/image", upload.single("image"), function (req, res, next)
     if (!req.file) {
       return res.status(400).send('No file uploaded.');
     }
-
+    let imgPath = path.join("uploads", req.file.filename);
     // saving the image filename into database
-    let saved = picModel.create({ imgPath: req.file.filename })
+    let saved = picModel.create({ imgPath })
     if (saved) res.json(createOutput(false, "file saved successful.."));
 
 
