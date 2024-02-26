@@ -3,7 +3,7 @@ const express = require("express");
 const dbConfig = require("./db/connect");
 const picModel = require("./models/pics")
 const multer = require("multer")
-const upload = multer({ dest: "uploads/" })
+const path = require("path")
 const userRoutes = require("./routes/users");
 const dataRoutes = require("./routes/data")
 const cors = require("cors");
@@ -24,22 +24,40 @@ app.get("/test", (req, res) => {
   res.send("LOL testing wooh");
 });
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/'); // Uploads will be stored in the "uploads/" directory
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true); // Accept only image files
+  } else {
+    cb(new Error('Only images are allowed!'), false);
+  }
+};
 
 
-app.post("/data/upload/image", upload.any(), function (req, res, next) {
+const upload = multer({ storage, fileFilter });
+
+
+
+app.post("/data/upload/image", upload.single("image"), function (req, res, next) {
   try {
-    if (req.file) {
-      // saving the image filename into database
-      let saved = picModel.create({ imgPath: req.file.filename })
-      if (saved) {
-        res.json(createOutput(false, "file saved successful.."))
-      } else {
-        res.json(createOutput(false, "Failed to save"))
-      }
 
-    } else {
-      res.json(createOutput(false, "there is no file"))
+    if (!req.file) {
+      return res.status(400).send('No file uploaded.');
     }
+
+    // saving the image filename into database
+    let saved = picModel.create({ imgPath: req.file.filename })
+    if (saved) res.json(createOutput(false, "file saved successful.."));
+
+
 
   } catch (error) {
     res.json(createOutput(false, error.message))
