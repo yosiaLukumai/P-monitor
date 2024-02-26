@@ -1,5 +1,6 @@
 const dataModel = require("./../models/data");
 const userModel = require("./../models/users");
+const picModel = require("./../models/pics")
 const createOutput = require("../utils").createOutput;
 const io = require("./../index")
 const serveData = async (req, res) => {
@@ -106,9 +107,27 @@ const FindLastData = async (req, res) => {
     }
 }
 
+const SaveImages = async (req, res) => {
+    try {
+
+        const deviceId = req.params.deviceId;
+        const found = await userModel.findOne({ deviceId: String(deviceId) });
+        if (found) {
+            // 
+        }else {
+            return res.json(createOutput(false, "No such device Id", true));
+        }
+
+
+    } catch (error) {
+        return res.json(createOutput(false, error.message, true));
+    }
+}
+
 module.exports = {
     serveData,
     FindLastData,
     fetchDataLogs,
-    serveGraphData
+    serveGraphData,
+    SaveImages
 }

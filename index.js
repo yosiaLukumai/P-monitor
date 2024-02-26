@@ -1,11 +1,15 @@
 const app = require("express")();
 const express = require("express");
 const dbConfig = require("./db/connect");
+const picModel = require("./models/pics")
+const multer = require("multer")
+const upload = multer({ dest: "uploads/" })
 const userRoutes = require("./routes/users");
 const dataRoutes = require("./routes/data")
 const cors = require("cors");
-const {Server} = require('socket.io')
-const http = require("http")
+const { Server } = require('socket.io')
+const http = require("http");
+const { createOutput } = require("./utils");
 require("dotenv").config();
 // database configuration
 dbConfig.connectDb();
@@ -20,6 +24,29 @@ app.get("/test", (req, res) => {
   res.send("LOL testing wooh");
 });
 
+
+
+app.post("/data/upload/image", upload.any(), function (req, res, next) {
+  try {
+    if (req.file) {
+      // saving the image filename into database
+      let saved = picModel.create({ imgPath: req.file.filename })
+      if (saved) {
+        res.json(createOutput(false, "file saved successful.."))
+      } else {
+        res.json(createOutput(false, "Failed to save"))
+      }
+
+    } else {
+      res.json(createOutput(false, "there is no file"))
+    }
+
+  } catch (error) {
+    res.json(createOutput(false, error.message))
+  }
+
+})
+
 // bringing all the routes
 userRoutes.userRoutes(app);
 
@@ -28,8 +55,8 @@ dataRoutes.dataRoutes(app);
 
 const server = http.createServer(app)
 const io = new Server(server, {
-  cors:{
-    origin:"*",
+  cors: {
+    origin: "*",
     methods: ["GET", "POST"]
   }
 })
@@ -37,11 +64,11 @@ const io = new Server(server, {
 io.on("connect", (socket) => {
   console.log('connected')
   // console.log(socket);
-  socket.on("disconnect", ()=> {
+  socket.on("disconnect", () => {
     console.log("client disconnected..");
   })
 })
 server.listen(process.env.PORT, () => {
   console.log(`App running and connected to port ${process.env.PORT}`);
 });
-module.exports.Socket =io
+module.exports.Socket = io
