@@ -9,6 +9,7 @@ const dataRoutes = require("./routes/data")
 const cors = require("cors");
 const { Server } = require('socket.io')
 const http = require("http");
+const BoxModel = require("./models/Boxs")
 const { createOutput } = require("./utils");
 require("dotenv").config();
 dbConfig.connectDb();
@@ -27,16 +28,23 @@ function reconnect() {
 
 }
 // Handle data received from the Python socket server
-client.on('data', function (data) {
+client.on('data', async function (data) {
   console.log("=================INCOMING DATA FROM PY SERVER==================");
   try {
     let receivedData = JSON.parse(data.toString())
     console.log("Received data:  ", receivedData);
+    const saved = await BoxModel.create({ average: receivedData.average, rectangles: receivedData.rectangles })
+    if (saved) {
+      console.log("Saved well the rectangelss");
+    } else {
+      console.log("Failed to save the boxess....");
+    }
+    client.destroy()
   } catch (error) {
     console.log("Error in parsing the json from the python server");
     console.log(error.message);
+    client.destroy()
   }
-  console.log('Result from Python server:', result);
 });
 
 
