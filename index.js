@@ -10,15 +10,39 @@ const cors = require("cors");
 const { Server } = require('socket.io')
 const http = require("http");
 const { createOutput } = require("./utils");
-var clientSocket = require('socket.io-client');
 require("dotenv").config();
-// database configuration
 dbConfig.connectDb();
+const net = require('net');
+
+const client = new net.Socket();
+
+// Connect to the Python socket server
+const SERVER_HOST = '127.0.0.1';
+const SERVER_PORT = 3200;
+
+function reconnect() {
+  client.connect(SERVER_PORT, SERVER_HOST, function () {
+    console.log('=^^=====Connected to Python socket server.===^^==');
+  });
+
+}
+// Handle data received from the Python socket server
+client.on('data', function (data) {
+  console.log("=================INCOMING DATA FROM PY SERVER==================");
+  try {
+    let receivedData = JSON.parse(data.toString())
+    console.log("Received data:  ", receivedData);
+  } catch (error) {
+    console.log("Error in parsing the json from the python server");
+    console.log(error.message);
+  }
+  console.log('Result from Python server:', result);
+});
+
 
 //cors config
 // limiting all the acces that comes from other hosting
 app.use(cors());
-// allowing the json and url encoded in the requesst body
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.get("/test", (req, res) => {
@@ -43,10 +67,6 @@ const fileFilter = (req, file, cb) => {
 };
 
 const upload = multer({ storage, fileFilter });
-var socket = clientSocket.connect('http://localhost:3200', { reconnect: true });
-socket.on('connect', function (socket) {
-  console.log('===============Connected to py Server================');
-});
 
 
 app.post("/data/upload/image", upload.single("image"), function (req, res, next) {
@@ -58,7 +78,10 @@ app.post("/data/upload/image", upload.single("image"), function (req, res, next)
     let imgPath = path.join("uploads", req.file.filename);
     // saving the image filename into database
     let saved = picModel.create({ imgPath })
-    socket.emit('imgPath', imgPath);
+    // before this let 
+    reconnect()
+    console.log("Sending file name:   ", req.file.filename);
+    client.write(req.file.filename)
     if (saved) res.json(createOutput(false, "file saved successful.."));
 
 
@@ -100,7 +123,6 @@ const io = new Server(server, {
 
 io.on("connect", (socket) => {
   console.log('connected')
-  // console.log(socket);
   socket.on("disconnect", () => {
     console.log("client disconnected..");
   })
