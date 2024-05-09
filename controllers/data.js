@@ -2,6 +2,7 @@ const dataModel = require("./../models/data");
 const userModel = require("./../models/users");
 const picModel = require("./../models/pics")
 const createOutput = require("../utils").createOutput;
+const BoxModel = require("../models/Boxs")
 const io = require("./../index")
 const serveData = async (req, res) => {
     try {
@@ -13,7 +14,7 @@ const serveData = async (req, res) => {
         hum = String(hum);
         size = String(size);
 
-        
+
 
         // const found = await userModel.findOne({ deviceId: String(deviceId) });
         const found = await userModel.findOne({ deviceId: 1000 });
@@ -41,7 +42,7 @@ const serveGraphData = async (req, res) => {
         const deviceId = req.params.deviceId
         const found = await userModel.findOne({ deviceId: String(deviceId) });
         if (found) {
-            const fiveLastData = await dataModel.find({userId: found?._id}, "temp hum size createdAt", { createdAt: -1 }).limit(6).exec();
+            const fiveLastData = await dataModel.find({ userId: found?._id }, "temp hum size createdAt", { createdAt: -1 }).limit(6).exec();
             return res.json(createOutput(true, fiveLastData))
         } else {
             return res.json({ status: 0, message: "Device not registered..." })
@@ -114,11 +115,26 @@ const SaveImages = async (req, res) => {
         const found = await userModel.findOne({ deviceId: String(deviceId) });
         if (found) {
             // 
-        }else {
+        } else {
             return res.json(createOutput(false, "No such device Id", true));
         }
 
 
+    } catch (error) {
+        return res.json(createOutput(false, error.message, true));
+    }
+}
+
+const FindSizes = async (req, res) => {
+    try {
+        const deviceId = req.params.deviceId
+        const found = await userModel.findOne({ deviceId: String(deviceId) });
+        if (found) {
+            const fiveLastData = await BoxModel.find(null, "average createdAt", { createdAt: -1 }).limit(6).exec();
+            return res.json(createOutput(true, fiveLastData))
+        } else {
+            return res.json({ status: 0, message: "Device not registered..." })
+        }
     } catch (error) {
         return res.json(createOutput(false, error.message, true));
     }
@@ -129,5 +145,6 @@ module.exports = {
     FindLastData,
     fetchDataLogs,
     serveGraphData,
-    SaveImages
+    SaveImages,
+    FindSizes
 }
