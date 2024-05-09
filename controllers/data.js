@@ -54,10 +54,8 @@ const serveGraphData = async (req, res) => {
 
 const fetchDataLogs = async (req, res) => {
     try {
-        console.log("fetching logs....");
         let parameter = req.params.parameter
         let userId = req.params.id
-        console.log(parameter);
         let user = await userModel.findById(userId)
         if (user) {
             // checking if the parameter is of what type
@@ -70,7 +68,7 @@ const fetchDataLogs = async (req, res) => {
                 return res.json(createOutput(true, data))
             }
             if (parameter == "size") {
-                const data = await dataModel.find({ userId }, "size createdAt", { sort: { createdAt: -1 } }).exec();
+                const data = await BoxModel.find(null, "average rectangles createdAt", { sort: { createdAt: -1 } }).exec();
                 return res.json(createOutput(true, data))
             }
         } else {
