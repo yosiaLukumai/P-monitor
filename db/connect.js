@@ -2,7 +2,7 @@ const mongoose = require("mongoose")
 
 //u3ldmau9lXwZoUje
 let url = "mongodb+srv://yosialukumai:Sv9JX3X5k3ceNfOz@cluster0.l51zdtq.mongodb.net/?retryWrites=true&w=majority"
-let urls ="mongodb+srv://yosialukumai:Sv9JX3X5k3ceNfOz@cluster0.l51zdtq.mongodb.net/PLant_Monitor?retryWrites=true&w=majority"
+let urls = "mongodb+srv://yosialukumai:Sv9JX3X5k3ceNfOz@cluster0.l51zdtq.mongodb.net/PLant_Monitor?retryWrites=true&w=majority"
 
 const connectDb = async () => {
     console.log("trying connecting to the database...");
@@ -44,8 +44,41 @@ const connectDB = async () => {
         process.exit(1);
     }
 }
+
+
+const LastDayAVGAggregator= (startingDate=new Date("Tue, 28 May 2024 00:00:00 GMT")) => {
+    return [
+        {
+            '$match': {
+                'createdAt': {
+                    '$gte': startingDate
+                }
+            }
+        }, {
+            '$group': {
+                '_id': {
+                    '$dateToString': {
+                        'format': '%Y-%m-%d',
+                        'date': '$createdAt'
+                    }
+                },
+                'avg': {
+                    '$avg': '$average'
+                }
+            }
+        }, {
+            '$sort': {
+                '_id': 1
+            }
+        }, {
+            '$limit': 6
+        }
+    ];
+}
+
 module.exports = {
     connectDb,
     reconnect,
-    connectDB
+    connectDB,
+    LastDayAVGAggregator
 }
