@@ -3,7 +3,8 @@ const userModel = require("./../models/users");
 const picModel = require("./../models/pics")
 const createOutput = require("../utils").createOutput;
 const BoxModel = require("../models/Boxs")
-const io = require("./../index")
+const io = require("./../index");
+const { LastDayAVGAggregator } = require("../db/connect");
 const serveData = async (req, res) => {
     try {
         // let { temp, hum, size, deviceId } = req.body;
@@ -56,19 +57,39 @@ const fetchDataLogs = async (req, res) => {
     try {
         let parameter = req.params.parameter
         let userId = req.params.id
+        let phase = req.params.phase
         let user = await userModel.findById(userId)
+        let dateFilter = new Date("May 10, 2024 06:36:12")
         if (user) {
             // checking if the parameter is of what type
             if (parameter == "Temperature") {
-                const data = await dataModel.find({ userId }, "temp createdAt", { sort: { createdAt: -1 } }).exec();
+                let data;
+                if (phase == "new") {
+                    data = await dataModel.find({ userId, createdAt: { $gte: dateFilter } }, "temp createdAt", { sort: { createdAt: -1 } }).exec();
+                }
+                else {
+                    data = await dataModel.find({ userId, createdAt: { $lte: dateFilter } }, "temp createdAt", { sort: { createdAt: -1 } }).exec();
+                }
                 return res.json(createOutput(true, data))
             }
             if (parameter == "Humidity") {
-                const data = await dataModel.find({ userId }, "hum createdAt", { sort: { createdAt: -1 } }).exec();
+                let data;
+                if (phase == "new") {
+                    data = await dataModel.find({ userId, createdAt: { $gte: dateFilter } }, "hum createdAt", { sort: { createdAt: -1 } }).exec();
+                }
+                else {
+                    data = await dataModel.find({ userId, createdAt: { $lte: dateFilter } }, "hum createdAt", { sort: { createdAt: -1 } }).exec();
+                }
                 return res.json(createOutput(true, data))
             }
             if (parameter == "size") {
-                const data = await BoxModel.find(null, "average rectangles createdAt", { sort: { createdAt: -1 } }).exec();
+                let data;
+                if (phase == "new") {
+                    data = await BoxModel.find(null, "average rectangles createdAt", { sort: { createdAt: -1 } }).exec();
+                }
+                else {
+                    data = await BoxModel.find(null, "average rectangles createdAt", { sort: { createdAt: -1 } }).exec();
+                }
                 return res.json(createOutput(true, data))
             }
         } else {
@@ -128,7 +149,15 @@ const FindSizes = async (req, res) => {
         const deviceId = req.params.deviceId
         const found = await userModel.findOne({ deviceId: String(deviceId) });
         if (found) {
-            const fiveLastData = await BoxModel.find(null, "average createdAt", { createdAt: -1 }).limit(6).exec();
+            // let compute for the day and find the last five days
+            // Given date
+            const givenDate = new Date();
+            const sixDaysAgo = new Date(givenDate.getTime() - (6 * 24 * 60 * 60 * 1000));
+
+            // const fiveLastData = await BoxModel.find(null, "average createdAt", { createdAt: -1 }).limit(6).exec();
+            let aggregationPipeline = LastDayAVGAggregator(sixDaysAgo)
+            const fiveLastData = await BoxModel.aggregate(aggregationPipeline).exec()
+            // const fiveLastData = await BoxModel.find(null, "average createdAt", { createdAt: -1 }).limit(6).exec();
             return res.json(createOutput(true, fiveLastData))
         } else {
             return res.json({ status: 0, message: "Device not registered..." })
