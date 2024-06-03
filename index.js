@@ -108,9 +108,17 @@ dataRoutes.dataRoutes(app);
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")))
 
-app.get("/data/images", async (req, res) => {
+app.get("/data/images/:phase", async (req, res) => {
   try {
-    let images = await picModel.find(null, "createdAt imgPath", { sort: { createdAt: -1 } })
+    let phase = req.params.phase
+    let images;
+    let dateFilter = new Date("May 10, 2024 06:36:12")
+    if (phase == "new") {
+      // const d = new Date("October 13, 2014 11:13:00");
+      images = await picModel.find({createdAt: {$gte: dateFilter}}, "createdAt imgPath", { sort: { createdAt: -1 } })
+    } else {
+      images = await picModel.find({createdAt: {$lte: dateFilter}}, "createdAt imgPath", { sort: { createdAt: -1 } })
+    }
     if (images) {
       res.json(createOutput(true, { images }, false))
     } else {
@@ -150,13 +158,13 @@ module.exports.Socket = io
 // Improve health status of civilians:  Most of farmers are exposed to harmful chemicals when they spray the pesticides to their farms which result to health problems in their nervous system and reproductive system also to the end users of the crops tend to use intake food with large amount of chemicals with SVELPA their will have clean and safe crops.
 // Retain soil fertility: Since there is no use of chemical in killing pests the soil quality is kept at higher standard.
 // Promote environment conservation and preservation: Some of the chemicals tends to kill sub-lethal effect to bees, reduction of fish and animal population, air pollution and water pollution. SVELPA will mitigate this effect
-// Reduce costs to farmers:  The enormous cost in buying pesticides is massive to farmers with this it will be reduced large a farmer will only be required to change aroma when needed also it can be shared with different farmers. 
+// Reduce costs to farmers:  The enormous cost in buying pesticides is massive to farmers with this it will be reduced large a farmer will only be required to change aroma when needed also it can be shared with different farmers.
 
 
 
 // We don't have enough fund to cover product finishing and commercialization procedures,
-// We also need partnership with some companies which create aroma according to pheromne e.g instution like Russel IPM, 
-// The massive cost to expand and scale up the project to reach large number of farmers with this innovation is still challenging, 
+// We also need partnership with some companies which create aroma according to pheromne e.g instution like Russel IPM,
+// The massive cost to expand and scale up the project to reach large number of farmers with this innovation is still challenging,
 // We also need some support to give awareness to farmers about the effect of pesticides and how they can be using this device to tackle the challenge.
 
 
@@ -166,7 +174,7 @@ module.exports.Socket = io
 
 // Assembling of material: Collecting of material needed to create the device such as Iron sheets, wood, colors and  neem leaves.
 // Manufacturing of Device, Aroma and oils: Designing of device in CAD software to fit the desired shape of the the device, the design should ensures proper and efficient trapping of this pest so it has some parts to first trap them, then collect them and control them. we create the part using some machining methods such as CNC or some part using 3D-printing, then we collect aroma from the vendors or creating them ourselves depending on the pest dealt, We add oil to the device for killing these pests.
-// Marketing & Maintenance: We reach out the farmers who struggle with pest and we introduce this device to them accompanied with continuous monitoring offering some maintenance when  needed such as changing of aroma depending on the crops and insects affecting the farm yield. 
+// Marketing & Maintenance: We reach out the farmers who struggle with pest and we introduce this device to them accompanied with continuous monitoring offering some maintenance when  needed such as changing of aroma depending on the crops and insects affecting the farm yield.
 // Training and awareness programs to the farmers about the device.
 
 
