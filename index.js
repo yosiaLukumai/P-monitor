@@ -21,31 +21,31 @@ const client = new net.Socket();
 const SERVER_HOST = '127.0.0.1';
 const SERVER_PORT = 3200;
 
-function reconnect() {
-  client.connect(SERVER_PORT, SERVER_HOST, function () {
-    console.log('=^^=====Connected to Python socket server.===^^==');
-  });
+// function reconnect() {
+//   client.connect(SERVER_PORT, SERVER_HOST, function () {
+//     console.log('=^^=====Connected to Python socket server.===^^==');
+//   });
 
-}
+// }
 // Handle data received from the Python socket server
-client.on('data', async function (data) {
-  console.log("=================INCOMING DATA FROM PY SERVER==================");
-  try {
-    let receivedData = JSON.parse(data.toString())
-    console.log("Received data:  ", receivedData);
-    const saved = await BoxModel.create({ average: receivedData.average, rectangles: receivedData.rectangles })
-    if (saved) {
-      console.log("Saved well the rectangelss");
-    } else {
-      console.log("Failed to save the boxess....");
-    }
-    client.destroy()
-  } catch (error) {
-    console.log("Error in parsing the json from the python server");
-    console.log(error.message);
-    client.destroy()
-  }
-});
+// client.on('data', async function (data) {
+//   console.log("=================INCOMING DATA FROM PY SERVER==================");
+//   try {
+//     let receivedData = JSON.parse(data.toString())
+//     console.log("Received data:  ", receivedData);
+//     const saved = await BoxModel.create({ average: receivedData.average, rectangles: receivedData.rectangles })
+//     if (saved) {
+//       console.log("Saved well the rectangelss");
+//     } else {
+//       console.log("Failed to save the boxess....");
+//     }
+//     client.destroy()
+//   } catch (error) {
+//     console.log("Error in parsing the json from the python server");
+//     console.log(error.message);
+//     client.destroy()
+//   }
+// });
 
 
 //cors config
@@ -87,10 +87,11 @@ app.post("/data/upload/image", upload.single("image"), function (req, res, next)
     // saving the image filename into database
     let saved = picModel.create({ imgPath })
     // before this let 
-    reconnect()
-    console.log("Sending file name:   ", req.file.filename);
-    client.write(req.file.filename)
-    if (saved) res.json(createOutput(false, "file saved successful.."));
+    // reconnect()
+    // console.log("Sending file name:   ", req.file.filename);
+    // client.write(req.file.filename)
+    // if (saved) 
+    res.json(createOutput(false, "file saved successful.."));
 
 
 
@@ -113,11 +114,14 @@ app.get("/data/images/:phase", async (req, res) => {
     let phase = req.params.phase
     let images;
     let dateFilter = new Date("May 10, 2024 06:36:12")
-    if (phase == "new") {
+    let dateFilterMid = new Date("July 15,2024 08:30:00")
+    if (phase == "1") {
       // const d = new Date("October 13, 2014 11:13:00");
-      images = await picModel.find({createdAt: {$gte: dateFilter}}, "createdAt imgPath", { sort: { createdAt: -1 } })
-    } else {
-      images = await picModel.find({createdAt: {$lte: dateFilter}}, "createdAt imgPath", { sort: { createdAt: -1 } })
+      images = await picModel.find({createdAt: { $lte: dateFilter }}, "createdAt imgPath", { sort: { createdAt: -1 } })
+    } else if(phase == "2") {
+      images = await picModel.find({createdAt: {$gte: dateFilter, $lte: dateFilterMid}}, "createdAt imgPath", { sort: { createdAt: -1 } })
+    } else{
+      images = await picModel.find({createdAt: {$gte: dateFilterMid}}, "createdAt imgPath", { sort: { createdAt: -1 } })
     }
     if (images) {
       res.json(createOutput(true, { images }, false))

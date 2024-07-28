@@ -60,31 +60,42 @@ const fetchDataLogs = async (req, res) => {
         let phase = req.params.phase
         let user = await userModel.findById(userId)
         let dateFilter = new Date("May 10, 2024 06:36:12")
+        let dateFilterMid = new Date("July 15,2024 08:30:00")
         if (user) {
             // checking if the parameter is of what type
             if (parameter == "Temperature") {
                 let data;
-                if (phase == "new") {
-                    data = await dataModel.find({ userId, createdAt: { $gte: dateFilter } }, "temp createdAt", { sort: { createdAt: -1 } }).exec();
+                if (phase == "1") {
+                    data = await dataModel.find({ userId, createdAt: { $lte: dateFilter } }, "temp createdAt", { sort: { createdAt: -1 } }).exec();
+                }
+                else if(phase == "2") {
+                    data = await dataModel.find({ userId, createdAt: { $gte: dateFilter, $lte: dateFilterMid } }, "temp createdAt", { sort: { createdAt: -1 } }).exec();
                 }
                 else {
-                    data = await dataModel.find({ userId, createdAt: { $lte: dateFilter } }, "temp createdAt", { sort: { createdAt: -1 } }).exec();
+                    data = await dataModel.find({ userId, createdAt: { $gte: dateFilterMid } }, "temp createdAt", { sort: { createdAt: -1 } }).exec();
                 }
                 return res.json(createOutput(true, data))
             }
             if (parameter == "Humidity") {
                 let data;
-                if (phase == "new") {
-                    data = await dataModel.find({ userId, createdAt: { $gte: dateFilter } }, "hum createdAt", { sort: { createdAt: -1 } }).exec();
+                if (phase == "1") {
+                    data = await dataModel.find({ userId, createdAt: {$lte: dateFilter} }, "hum createdAt", { sort: { createdAt: -1 } }).exec();
+                }
+                else if(phase == "2") {
+                    // $gte: dateFilter, $lte: dateFilterMid
+                    data = await dataModel.find({ userId, createdAt: {  $gte: dateFilter, $lte: dateFilterMid } }, "hum createdAt", { sort: { createdAt: -1 } }).exec();
+
                 }
                 else {
-                    data = await dataModel.find({ userId, createdAt: { $lte: dateFilter } }, "hum createdAt", { sort: { createdAt: -1 } }).exec();
+                    data = await dataModel.find({ userId, createdAt: { $gte: dateFilterMid } }, "hum createdAt", { sort: { createdAt: -1 } }).exec();
                 }
                 return res.json(createOutput(true, data))
             }
             if (parameter == "size") {
                 let data;
-                if (phase == "new") {
+                if (phase == "1") {
+                    data = await BoxModel.find(null, "average rectangles createdAt", { sort: { createdAt: -1 } }).exec();
+                }else if(phase == "2") {
                     data = await BoxModel.find(null, "average rectangles createdAt", { sort: { createdAt: -1 } }).exec();
                 }
                 else {
