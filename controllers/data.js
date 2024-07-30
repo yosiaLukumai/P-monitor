@@ -58,6 +58,7 @@ const fetchDataLogs = async (req, res) => {
         let parameter = req.params.parameter
         let userId = req.params.id
         let phase = req.params.phase
+        // console.log(phase, phase=="1", phase=="2", phase=="3")
         let user = await userModel.findById(userId)
         let dateFilter = new Date("May 10, 2024 06:36:12")
         let dateFilterMid = new Date("July 15,2024 08:30:00")

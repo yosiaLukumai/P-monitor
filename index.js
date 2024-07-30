@@ -115,6 +115,7 @@ app.get("/data/images/:phase", async (req, res) => {
     let images;
     let dateFilter = new Date("May 10, 2024 06:36:12")
     let dateFilterMid = new Date("July 15,2024 08:30:00")
+    console.log(phase)
     if (phase == "1") {
       // const d = new Date("October 13, 2014 11:13:00");
       images = await picModel.find({createdAt: { $lte: dateFilter }}, "createdAt imgPath", { sort: { createdAt: -1 } })
